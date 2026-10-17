@@ -1,0 +1,22 @@
+{
+  "name": "linkfold",
+  "version": "1.0.0",
+  "description": "Dynamic QR codes + bio-link pages",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --disable-warning=ExperimentalWarning server.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "qr-code-styling": "^1.9.2"
+  },
+  "type": "module",
+  "devDependencies": {
+    "jsqr": "^1.4.0",
+    "playwright": "^1.62.1",
+    "pngjs": "^7.0.0"
+  }
+}

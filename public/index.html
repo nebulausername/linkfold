@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Linkfold — dynamic QR codes &amp; bio links</title>
+<meta name="description" content="Design branded, high-resolution QR codes that link to a mobile bio page — and change where they point any time, without reprinting.">
+<meta name="theme-color" content="#f7f7f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111214" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="{{BASE}}/favicon.svg?v={{V}}">
+<link rel="stylesheet" href="{{BASE}}/styles.css?v={{V}}">
+<link rel="stylesheet" href="{{BASE}}/bio.css?v={{V}}">
+<script src="{{BASE}}/vendor/qr-code-styling.js?v={{V}}" defer></script>
+<script type="module" src="{{BASE}}/app.js?v={{V}}"></script>
+</head>
+<body data-base="{{BASE}}" data-origin="{{ORIGIN}}" data-v="{{V}}">
+<header class="top">
+  <a class="brand" href="{{BASE}}/" aria-label="Linkfold home">
+    <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="26" height="26" rx="7" fill="var(--accent)"/><path d="M10 10h5v5h-5zM17 17h5v5h-5z" fill="#fff"/><path d="M17 10h5v5" fill="none" stroke="#fff" stroke-width="2"/><path d="M10 17v5h5" fill="none" stroke="#fff" stroke-width="2"/></svg>
+    <span>Linkfold</span>
+  </a>
+  <span class="pill">Demo</span>
+  <div class="top-r">
+    <button type="button" class="btn ghost sm" id="newBtn">New code</button>
+    <div class="menu">
+      <button type="button" class="btn ghost sm" id="mineBtn" aria-expanded="false" aria-controls="mineList">My codes <span id="mineCount" class="count">0</span></button>
+      <div class="menu-pop" id="mineList" hidden></div>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <h1>Print once. <span>Change the link forever.</span></h1>
+  <p>Design a branded, high-resolution QR code, point it at a mobile bio page or any URL — and update the destination any time. The printed code never changes.</p>
+  <ol class="steps"><li><b>1</b> Design your code</li><li><b>2</b> Create it — you get a private edit link</li><li><b>3</b> Edit live; every scan follows</li></ol>
+</section>
+
+<div class="banner" id="banner" role="status"></div>
+
+<main class="grid">
+  <section class="editor card" aria-label="Editor">
+    <div class="tabs" role="tablist" aria-label="Editor sections">
+      <button type="button" role="tab" id="tab-dest" aria-controls="panel-dest" aria-selected="true">Destination</button>
+      <button type="button" role="tab" id="tab-bio" aria-controls="panel-bio" aria-selected="false" tabindex="-1">Bio page</button>
+      <button type="button" role="tab" id="tab-qr" aria-controls="panel-qr" aria-selected="false" tabindex="-1">QR design</button>
+      <button type="button" role="tab" id="tab-stats" aria-controls="panel-stats" aria-selected="false" tabindex="-1">Stats</button>
+    </div>
+
+    <div role="tabpanel" id="panel-dest" aria-labelledby="tab-dest" class="panel">
+      <label class="field"><span>Internal name</span><input data-bind="name" maxlength="60" placeholder="e.g. Table card — spring menu"></label>
+      <fieldset class="field">
+        <legend>When someone scans the code…</legend>
+        <div class="seg" role="radiogroup">
+          <label><input type="radio" name="mode" value="bio" data-bind="mode"><span><b>Show bio page</b><small>Your links on one mobile page</small></span></label>
+          <label><input type="radio" name="mode" value="redirect" data-bind="mode"><span><b>Redirect to URL</b><small>Send people straight to one link</small></span></label>
+        </div>
+      </fieldset>
+      <label class="field" id="targetField"><span>Destination URL</span><input data-bind="target" data-url inputmode="url" autocomplete="url" placeholder="https://your-site.com/landing"></label>
+      <div class="note">
+        <b>How the dynamic link works</b>
+        <p>The QR code encodes <code id="scanUrlNote">…/s/your-code</code>. That short address is resolved on our server at every scan, so you can switch between bio page and redirect, or swap any link, without touching the printed code.</p>
+      </div>
+    </div>
+
+    <div role="tabpanel" id="panel-bio" aria-labelledby="tab-bio" class="panel" hidden>
+      <label class="field"><span>Title</span><input data-bind="bio.title" maxlength="60" placeholder="Your brand"></label>
+      <label class="field"><span>Tagline</span><textarea data-bind="bio.tagline" maxlength="160" rows="2" placeholder="One line about you"></textarea></label>
+      <label class="check"><input type="checkbox" data-bind="bio.showLogo"> Show logo / initials on the page</label>
+      <div class="field">
+        <div class="row-h"><span>Links</span><button type="button" class="btn ghost sm" id="addLink">+ Add link</button></div>
+        <ul class="links-ed" id="linksEd"></ul>
+      </div>
+      <div class="field">
+        <span>Theme</span>
+        <div class="colors">
+          <label><input type="color" data-bind="bio.theme.bg"> Background</label>
+          <label><input type="color" data-bind="bio.theme.card"> Buttons</label>
+          <label><input type="color" data-bind="bio.theme.text"> Text</label>
+          <label><input type="color" data-bind="bio.theme.accent"> Accent</label>
+        </div>
+        <button type="button" class="btn ghost sm" id="syncFromQr">Use QR brand colors</button>
+      </div>
+      <div class="two">
+        <label class="field"><span>Button shape</span><select data-bind="bio.theme.shape"><option value="pill">Pill</option><option value="soft">Soft</option><option value="square">Square</option></select></label>
+        <label class="field"><span>Font</span><select data-bind="bio.theme.font"><option value="sans">Sans</option><option value="serif">Serif</option><option value="mono">Mono</option></select></label>
+      </div>
+    </div>
+
+    <div role="tabpanel" id="panel-qr" aria-labelledby="tab-qr" class="panel" hidden>
+      <div class="field">
+        <span>Brand colors</span>
+        <div class="colors">
+          <label><input type="color" data-bind="style.fg"> Dots</label>
+          <label><input type="color" data-bind="style.eye"> Corners</label>
+          <label><input type="color" data-bind="style.bg"> Background</label>
+        </div>
+        <p class="warn" id="contrastWarn" hidden></p>
+      </div>
+      <div class="field"><span>Dot style</span><div class="chips" data-chips="style.dots"></div></div>
+      <div class="two">
+        <label class="field"><span>Corner frame</span><select data-bind="style.eyeStyle"><option value="extra-rounded">Rounded</option><option value="square">Square</option><option value="dot">Circle</option></select></label>
+        <label class="field"><span>Corner dot</span><select data-bind="style.eyeDot"><option value="dot">Circle</option><option value="square">Square</option></select></label>
+      </div>
+      <div class="field">
+        <span>Logo</span>
+        <div class="logo-row">
+          <div class="logo-prev" id="logoPrev" aria-hidden="true"></div>
+          <label class="btn ghost sm file">Upload PNG/JPG/SVG<input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp,image/svg+xml"></label>
+          <button type="button" class="btn ghost sm" id="logoRemove">Remove</button>
+        </div>
+        <label class="range"><span>Logo size</span><input type="range" min="0.15" max="0.5" step="0.01" data-bind="style.logoSize" data-num></label>
+        <p class="hint">With a logo the code switches to the highest error correction (H, 30%) so it still scans.</p>
+      </div>
+    </div>
+
+    <div role="tabpanel" id="panel-stats" aria-labelledby="tab-stats" class="panel" hidden>
+      <div id="statsBody"><p class="hint">Create your code to start counting scans.</p></div>
+    </div>
+  </section>
+
+  <aside class="preview" aria-label="Preview">
+    <div class="card qr-card">
+      <div class="qr-box" id="qrBox" role="img" aria-label="QR code preview"></div>
+      <div class="scan-url">
+        <code id="scanUrl">…</code>
+        <button type="button" class="btn ghost sm" id="copyScan">Copy</button>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn primary" id="saveBtn">Create dynamic QR code</button>
+        <div class="dl">
+          <button type="button" class="btn ghost" id="dlPng">PNG · 2048 px</button>
+          <button type="button" class="btn ghost" id="dlSvg">SVG · vector</button>
+        </div>
+        <a class="btn ghost" id="openLive" href="#" target="_blank" rel="noopener">Open live page ↗</a>
+      </div>
+    </div>
+    <div class="phone" aria-label="Bio page preview">
+      <div class="phone-screen" id="phone"></div>
+    </div>
+  </aside>
+</main>
+
+<dialog id="createdDlg" aria-labelledby="createdTitle">
+  <h2 id="createdTitle">Your dynamic QR code is live 🎉</h2>
+  <p>This is your <b>private edit link</b>. Anyone with it can change where the code points — keep it safe. It's also saved under “My codes” in this browser.</p>
+  <div class="scan-url"><code id="editLink"></code><button type="button" class="btn ghost sm" id="copyEdit">Copy</button></div>
+  <p class="hint">Download the PNG or SVG now and print it — from here on, every change you make goes live instantly.</p>
+  <form method="dialog"><button class="btn primary">Got it</button></form>
+</dialog>
+
+<footer class="foot">
+  Linkfold is a working demo by <a href="https://kaufmeinewebsite.de/">kaufmeinewebsite.de</a> · demo codes are deleted 30 days after their last edit · links to <code>example.com</code> are placeholders.
+</footer>
+</body>
+</html>
